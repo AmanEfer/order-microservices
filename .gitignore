@@ -1,5 +1,15 @@
-### Default ignored files ###
-/target
+.mvn
+mvnw
+mvnw.cmd
+
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+.gitattributes
 
 ### IntelliJ IDEA ###
-.idea/
+.idea
+*.iws
+*.iml
+*.ipr
