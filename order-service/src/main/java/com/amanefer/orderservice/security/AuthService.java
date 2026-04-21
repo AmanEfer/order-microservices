@@ -1,5 +1,7 @@
 package com.amanefer.orderservice.security;
 
+import com.amanefer.orderservice.exception.BadRequestException;
+import com.amanefer.orderservice.exception.InvalidTokenException;
 import com.amanefer.orderservice.exception.UnauthorizedException;
 import com.amanefer.orderservice.model.dto.AuthResponse;
 import com.amanefer.orderservice.model.dto.LoginRequest;
@@ -30,11 +32,11 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
-            throw new IllegalArgumentException("Пользователь с таким именем уже существует");
+            throw new BadRequestException("Пользователь с таким именем уже существует");
         }
 
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Такой email уже занят");
+            throw new BadRequestException("Такой email уже занят");
         }
 
         var role = roleService.getRoleByName(defaultRoleName);
@@ -66,7 +68,7 @@ public class AuthService {
         var userDetails = new CustomUserDetails(user);
 
         if (!jwtService.isRefreshTokenValid(refreshToken, userDetails)) {
-            throw new IllegalArgumentException("Refresh токен не валиден");
+            throw new InvalidTokenException("Refresh токен не валиден");
         }
 
         return generateTokensAndCreateAuthResponse(user);

@@ -9,7 +9,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             EntityNotFoundException.class,
-            UnauthorizedException.class
+            UnauthorizedException.class,
+            BadRequestException.class,
+            InvalidTokenException.class
     })
     public ResponseEntity<ErrorDto> handleBaseCustomException(BaseCustomException ex) {
         var errorDto = new ErrorDto(
