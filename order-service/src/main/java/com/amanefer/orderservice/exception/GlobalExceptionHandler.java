@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorDto> handleUserNotFoundException(EntityNotFoundException ex) {
-
+    @ExceptionHandler({
+            EntityNotFoundException.class,
+            UnauthorizedException.class
+    })
+    public ResponseEntity<ErrorDto> handleBaseCustomException(BaseCustomException ex) {
         var errorDto = new ErrorDto(
                 ex.getStatus().value(),
                 ex.getCode(),

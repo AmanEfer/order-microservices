@@ -24,7 +24,6 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> createNewUser(@RequestBody UserRequest userRequest) {
-
         var response = userService.createNewUser(userRequest);
 
         return ResponseEntity.ok().body(response);
@@ -32,7 +31,6 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
-
         var response = userService.getAllUsers();
 
         return ResponseEntity.ok().body(response);
@@ -40,7 +38,6 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
-
         var response = userService.getUserById(id);
 
         return ResponseEntity.ok().body(response);
@@ -48,7 +45,6 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUserById(@PathVariable("id") Long id) {
-
         var response = userService.deleteUserById(id);
 
         return ResponseEntity.ok().body(response);

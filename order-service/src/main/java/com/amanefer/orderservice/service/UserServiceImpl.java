@@ -6,6 +6,7 @@ import com.amanefer.orderservice.model.entity.User;
 import com.amanefer.orderservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,20 +18,20 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
     @Value("${user.role.default-name}")
-    private String roleName;
+    private String defaultRoleName;
 
     private final UserRepository userRepository;
     private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
     public User createNewUser(UserRequest request) {
-
-        var role = roleService.getRoleByName(roleName);
+        var role = roleService.getRoleByName(defaultRoleName);
 
         var user = User.builder()
                 .username(request.username())
-                .password(request.password())
+                .password(passwordEncoder.encode(request.password()))
                 .email(request.email())
                 .roles(Set.of(role))
                 .build();
@@ -40,13 +41,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAllUsers() {
-
         return userRepository.findAll();
     }
 
     @Override
     public User getUserById(Long id) {
-
         return userRepository.findById(id)
                 .orElseThrow(() ->
                         new EntityNotFoundException("Пользователь с ID " + id + " не найден"));
@@ -55,7 +54,6 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public String deleteUserById(Long id) {
-
         var userForDelete = getUserById(id);
         userRepository.delete(userForDelete);
 
