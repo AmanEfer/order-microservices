@@ -3,6 +3,7 @@ package com.amanefer.orderservice.controller;
 import com.amanefer.orderservice.model.dto.UserRequest;
 import com.amanefer.orderservice.model.entity.User;
 import com.amanefer.orderservice.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +24,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<User> createNewUser(@RequestBody UserRequest userRequest) {
+    public ResponseEntity<User> createNewUser(@Valid @RequestBody UserRequest userRequest) {
         var response = userService.createNewUser(userRequest);
 
         return ResponseEntity.ok().body(response);
