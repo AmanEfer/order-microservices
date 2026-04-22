@@ -34,3 +34,7 @@ jwt:
   refresh:
     secret: "G8hJ2kL5mN7pQ9rS1tU3vW5xY7zA2bC4dE6fG8hJ0kL="
     expiration: 3600000
+
+cors:
+  allowed-origins:
+    - http://localhost:3000
