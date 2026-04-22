@@ -1,7 +1,9 @@
 package com.amanefer.orderservice.service;
 
+import com.amanefer.orderservice.exception.BadRequestException;
 import com.amanefer.orderservice.exception.EntityNotFoundException;
 import com.amanefer.orderservice.model.dto.UserRequest;
+import com.amanefer.orderservice.model.entity.Role;
 import com.amanefer.orderservice.model.entity.User;
 import com.amanefer.orderservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,13 +29,29 @@ public class UserService {
 
     @Transactional
     public User createNewUser(UserRequest request) {
-        var role = roleService.getRoleByName(defaultRoleName);
+        if (userRepository.existsByUsername(request.username())) {
+            throw new BadRequestException("Пользователь с таким именем уже существует");
+        }
+
+        if (userRepository.existsByEmail(request.email())) {
+            throw new BadRequestException("Такой email уже занят");
+        }
+
+        Set<Role> roles;
+        if (request.roles() == null || request.roles().isEmpty()) {
+            var role = roleService.getRoleByName(defaultRoleName);
+            roles = Set.of(role);
+        } else {
+            roles = request.roles().stream()
+                    .map(roleService::getRoleByName)
+                    .collect(Collectors.toSet());
+        }
 
         var user = User.builder()
                 .username(request.username())
                 .password(passwordEncoder.encode(request.password()))
                 .email(request.email())
-                .roles(Set.of(role))
+                .roles(roles)
                 .build();
 
         return userRepository.save(user);
@@ -51,6 +70,7 @@ public class UserService {
     @Transactional
     public String deleteUserById(Long id) {
         var userForDelete = getUserById(id);
+
         userRepository.delete(userForDelete);
 
         return "Пользователь с ID " + id + " успешно удален";

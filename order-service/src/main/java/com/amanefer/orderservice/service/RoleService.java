@@ -16,6 +16,6 @@ public class RoleService {
 
         return roleRepository.findByName(roleName.toUpperCase().trim())
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Такой роли не существует"));
+                        new EntityNotFoundException("Роли %s не существует".formatted(roleName)));
     }
 }
