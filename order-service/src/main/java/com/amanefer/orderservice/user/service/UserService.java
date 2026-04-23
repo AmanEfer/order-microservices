@@ -1,7 +1,7 @@
 package com.amanefer.orderservice.user.service;
 
 import com.amanefer.orderservice.exception.BadRequestException;
-import com.amanefer.orderservice.exception.EntityNotFoundException;
+import com.amanefer.orderservice.exception.UserNotFoundException;
 import com.amanefer.orderservice.user.model.dto.UserRequest;
 import com.amanefer.orderservice.user.model.entity.Role;
 import com.amanefer.orderservice.user.model.entity.User;
@@ -64,7 +64,7 @@ public class UserService {
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Пользователь с ID " + id + " не найден"));
+                        new UserNotFoundException("Пользователь с ID " + id + " не найден"));
     }
 
     @Transactional

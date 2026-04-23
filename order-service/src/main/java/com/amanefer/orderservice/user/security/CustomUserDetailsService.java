@@ -1,6 +1,6 @@
 package com.amanefer.orderservice.user.security;
 
-import com.amanefer.orderservice.exception.EntityNotFoundException;
+import com.amanefer.orderservice.exception.UserNotFoundException;
 import com.amanefer.orderservice.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +18,6 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
                 .map(CustomUserDetails::new)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
     }
 }

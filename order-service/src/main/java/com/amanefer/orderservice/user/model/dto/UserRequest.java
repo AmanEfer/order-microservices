@@ -26,6 +26,6 @@ public record UserRequest(
         String email,
 
         @NotEmpty(message = "Должна быть указана как минимум одна роль")
-        Set<String> roles
+        Set<@NotBlank(message = "Название роли не может быть пустой строкой") String> roles
 ) {
 }

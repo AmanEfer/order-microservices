@@ -1,6 +1,6 @@
 package com.amanefer.orderservice.user.service;
 
-import com.amanefer.orderservice.exception.EntityNotFoundException;
+import com.amanefer.orderservice.exception.RoleNotFoundException;
 import com.amanefer.orderservice.user.model.entity.Role;
 import com.amanefer.orderservice.user.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +16,6 @@ public class RoleService {
 
         return roleRepository.findByName(roleName.toUpperCase().trim())
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Роли %s не существует".formatted(roleName)));
+                        new RoleNotFoundException("Роли %s не существует".formatted(roleName)));
     }
 }

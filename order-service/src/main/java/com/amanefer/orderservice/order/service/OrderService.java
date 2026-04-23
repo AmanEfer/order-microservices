@@ -1,7 +1,7 @@
 package com.amanefer.orderservice.order.service;
 
 import com.amanefer.orderservice.exception.BadRequestException;
-import com.amanefer.orderservice.exception.EntityNotFoundException;
+import com.amanefer.orderservice.exception.OrderNotFoundException;
 import com.amanefer.orderservice.order.model.dto.CreateOrderRequest;
 import com.amanefer.orderservice.order.model.dto.OrderItemRequest;
 import com.amanefer.orderservice.order.model.dto.OrderItemResponse;
@@ -75,7 +75,7 @@ public class OrderService {
     @Transactional
     public String deleteOrderById(Long userId, Long orderId) {
         if (!orderRepository.existsByUserIdAndId(userId, orderId)) {
-            throw new EntityNotFoundException("Заказ не найден");
+            throw new OrderNotFoundException("Заказ не найден");
         }
 
         orderRepository.deleteByUserIdAndId(userId, orderId);

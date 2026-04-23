@@ -4,6 +4,7 @@ import com.amanefer.orderservice.order.model.dto.CreateOrderRequest;
 import com.amanefer.orderservice.order.model.dto.OrderResponse;
 import com.amanefer.orderservice.order.service.OrderService;
 import com.amanefer.orderservice.user.security.CustomUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,7 +25,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderResponse> createNewOrder(
             @AuthenticationPrincipal CustomUserDetails user,
-            @RequestBody CreateOrderRequest request
+            @Valid @RequestBody CreateOrderRequest request
     ) {
         var response = orderService.createOrder(user.getId(), request);
 

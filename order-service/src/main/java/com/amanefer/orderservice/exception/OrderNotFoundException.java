@@ -1,0 +1,10 @@
+package com.amanefer.orderservice.exception;
+
+import org.springframework.http.HttpStatus;
+
+public class OrderNotFoundException extends BaseCustomException {
+
+    public OrderNotFoundException(String message) {
+        super(message, HttpStatus.NOT_FOUND, "Order not found");
+    }
+}
