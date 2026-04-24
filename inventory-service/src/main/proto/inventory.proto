@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package inventory;
+
+option java_package = "com.amanefer.inventoryservice.inventory.grpc";
+option java_multiple_files = true;
+
+service InventoryService {
+  rpc checkAvailability(ProductRequest) returns (ProductResponse);
+}
+
+message ProductRequest {
+  int64 productId = 1;
+  int32 quantity = 2;
+}
+
+message ProductResponse {
+  int64 productId = 1;
+  string name = 2;
+  int32 quantity = 3;
+  double price = 4;
+  int32 sale = 5;
+  bool available = 6;
+}

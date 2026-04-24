@@ -1,14 +1,11 @@
-package com.amanefer.orderservice.order.model.entity;
+package com.amanefer.inventoryservice.model.entity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -22,43 +19,44 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "products")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
-public class Order {
+public class Product {
 
     @Id
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "order_seq"
+            generator = "product_seq"
     )
     @SequenceGenerator(
-            name = "order_seq",
-            sequenceName = "order_sequence",
-            allocationSize = 50,
-            initialValue = 1
+            name = "product_seq",
+            sequenceName = "product_sequence",
+            allocationSize = 1
     )
     private Long id;
 
-    private Long userId;
+    @Column(nullable = false, unique = true)
+    private String name;
 
-    private BigDecimal totalPrice;
+    @Column(nullable = false)
+    private Integer quantity;
 
-    @CreatedDate
+    @Column(nullable = false)
+    private BigDecimal price;
+
+    private Integer sale;
+
     @Column(updatable = false)
+    @CreatedDate
     private LocalDateTime createdAt;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "order_id")
-    private List<OrderItem> items;
 }
