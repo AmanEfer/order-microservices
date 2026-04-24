@@ -38,3 +38,8 @@ jwt:
 cors:
   allowed-origins:
     - http://localhost:3000
+
+grpc:
+  inventory:
+    host: localhost
+    port: 9090
