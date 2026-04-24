@@ -3,6 +3,7 @@ package com.amanefer.orderservice.user.security;
 import com.amanefer.orderservice.exception.BadRequestException;
 import com.amanefer.orderservice.exception.InvalidTokenException;
 import com.amanefer.orderservice.exception.UnauthorizedException;
+import com.amanefer.orderservice.exception.UserNotFoundException;
 import com.amanefer.orderservice.user.model.dto.AuthResponse;
 import com.amanefer.orderservice.user.model.dto.LoginRequest;
 import com.amanefer.orderservice.user.model.dto.RegisterRequest;
@@ -53,7 +54,8 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        var user = getUser(request.username(), "Неправильный логин или пароль");
+        var user = userRepository.findByUsername(request.username())
+                .orElseThrow(() -> new UnauthorizedException("Неправильный логин или пароль"));
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new UnauthorizedException("Неправильный логин или пароль");
@@ -63,20 +65,19 @@ public class AuthService {
     }
 
     public AuthResponse refresh(String refreshToken) {
-        var username = jwtService.extractUsername(refreshToken, true);
-        var user = getUser(username, "Пользователь не найден");
+        var claims = jwtService.extractClaims(refreshToken, true);
+        Long userId = claims.get("userId", Long.class);
+
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+
         var userDetails = new CustomUserDetails(user);
 
-        if (!jwtService.isRefreshTokenValid(refreshToken, userDetails)) {
+        if (!jwtService.isTokenValid(claims, userDetails)) {
             throw new InvalidTokenException("Refresh токен не валиден");
         }
 
         return generateTokensAndCreateAuthResponse(user);
-    }
-
-    private User getUser(String username, String message) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UnauthorizedException(message));
     }
 
     private AuthResponse generateTokensAndCreateAuthResponse(User user) {

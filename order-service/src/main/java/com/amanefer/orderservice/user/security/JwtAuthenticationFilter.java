@@ -35,20 +35,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String jwt = header.substring(7);
-        String username = jwtService.extractUsername(jwt, false);
+
+        var claims = jwtService.extractClaims(jwt, false);
+
+        Long tokenUserId = claims.get("userId", Long.class);
+        String username = claims.getSubject();
+
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (username != null && authentication == null) {
-            var userDetails = userDetailsService.loadUserByUsername(username);
+        if (username != null && tokenUserId != null && authentication == null) {
+            var userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
 
-            if (jwtService.isTokenValid(jwt, false, userDetails)) {
-                var token = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
-                );
-
-                token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(token);
+            if (!userDetails.getId().equals(tokenUserId)) {
+                filterChain.doFilter(request, response);
+                return;
             }
+
+            if (!jwtService.isTokenValid(claims, userDetails)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            var token = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities()
+            );
+
+            token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(token);
+
         }
         filterChain.doFilter(request, response);
     }

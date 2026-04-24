@@ -47,24 +47,18 @@ public class JwtService {
                 .getPayload();
     }
 
-    public String extractUsername(String token, boolean isRefresh) {
-        return extractClaims(token, isRefresh).getSubject();
-    }
-
-    public boolean isTokenValid(String token, boolean isRefresh, UserDetails userDetails) {
-        final String username = extractUsername(token, isRefresh);
-        boolean isTokenExpired = extractClaims(token, isRefresh).getExpiration().before(new Date());
+    public boolean isTokenValid(Claims claims, UserDetails userDetails) {
+        final String username = claims.getSubject();
+        boolean isTokenExpired = claims.getExpiration().before(new Date());
 
         return username.equals(userDetails.getUsername()) && !isTokenExpired;
     }
 
-    public boolean isRefreshTokenValid(String token, UserDetails userDetails) {
-        return isTokenValid(token, true, userDetails);
-    }
 
     private String generateToken(User user, String secret, long expirationTime) {
         return Jwts.builder()
                 .subject(user.getUsername())
+                .claim("userId", user.getId())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigningKey(secret))

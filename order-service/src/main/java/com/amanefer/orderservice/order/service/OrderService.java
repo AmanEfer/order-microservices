@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -23,6 +24,14 @@ import java.util.Random;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+
+    public List<OrderResponse> getUserOrders(Long userId) {
+        List<Order> orders = orderRepository.findAllByUserId(userId);
+
+        return orders.stream()
+                .map(this::toOrderResponse)
+                .toList();
+    }
 
     public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
         var items = new ArrayList<OrderItem>();
@@ -102,14 +111,14 @@ public class OrderService {
                 )
                 .build();
     }
-
     //todo имитация gRPC запроса в inventory-service
+
     private ProductInfo getProductInfo(Long productId) {
         var random = new Random();
 
         return new ProductInfo(
                 productId,
-                random.nextInt(1, 11), //кол-во товара от 1 до 10
+                random.nextInt(5, 11), //кол-во товара от 5 до 10
                 BigDecimal.valueOf(random.nextLong(10, 101)), // цена от 10 до 100
                 random.nextInt(20) // скидка до 20%
         );
