@@ -3,7 +3,7 @@ package com.amanefer.inventoryservice.inventory.service;
 import com.amanefer.inventoryservice.inventory.grpc.InventoryServiceGrpc;
 import com.amanefer.inventoryservice.inventory.grpc.ProductRequest;
 import com.amanefer.inventoryservice.inventory.grpc.ProductResponse;
-import com.amanefer.inventoryservice.repository.ProductRepository;
+import com.amanefer.inventoryservice.service.ProductService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -12,17 +12,14 @@ import net.devh.boot.grpc.server.service.GrpcService;
 @RequiredArgsConstructor
 public class InventoryGrpcService extends InventoryServiceGrpc.InventoryServiceImplBase {
 
-    private final ProductRepository productRepository;
+    private final ProductService productService;
 
     @Override
     public void checkAvailability(
             ProductRequest request,
             StreamObserver<ProductResponse> responseObserver
     ) {
-        var product = productRepository.findById(request.getProductId())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Продукт с ID %s не найден"
-                                .formatted(request.getProductId())));
+        var product = productService.getProductById(request.getProductId());
 
         boolean available = product.getQuantity() >= request.getQuantity();
         int sale = product.getSale() == null ? 0 : product.getSale();

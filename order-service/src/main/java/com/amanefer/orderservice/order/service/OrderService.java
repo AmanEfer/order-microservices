@@ -62,6 +62,7 @@ public class OrderService {
 
             OrderItem orderItem = OrderItem.builder()
                     .productId(product.getProductId())
+                    .name(product.getName())
                     .quantity(item.quantity())
                     .price(price)
                     .sale(saleValue)
@@ -105,6 +106,7 @@ public class OrderService {
                         order.getItems().stream()
                                 .map(item -> OrderItemResponse.builder()
                                         .productId(item.getProductId())
+                                        .name(item.getName())
                                         .quantity(item.getQuantity())
                                         .price(item.getPrice())
                                         .sale(item.getSale())

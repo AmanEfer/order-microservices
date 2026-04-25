@@ -38,6 +38,8 @@ public class OrderItem {
 
     private Long productId;
 
+    private String name;
+
     private Integer quantity;
 
     private BigDecimal price;
