@@ -1,4 +1,4 @@
-package com.amanefer.inventoryservice.inventory.service;
+package com.amanefer.inventoryservice.inventory;
 
 import com.amanefer.inventoryservice.inventory.grpc.InventoryServiceGrpc;
 import com.amanefer.inventoryservice.inventory.grpc.ProductRequest;
@@ -21,14 +21,14 @@ public class InventoryGrpcService extends InventoryServiceGrpc.InventoryServiceI
     ) {
         var product = productService.getProductById(request.getProductId());
 
-        boolean available = product.getQuantity() >= request.getQuantity();
-        int sale = product.getSale() == null ? 0 : product.getSale();
+        boolean available = product.quantity() >= request.getQuantity();
+        int sale = product.sale() == null ? 0 : product.sale();
 
         ProductResponse response = ProductResponse.newBuilder()
-                .setProductId(product.getId())
-                .setName(product.getName())
-                .setQuantity(product.getQuantity())
-                .setPrice(product.getPrice().doubleValue())
+                .setProductId(product.id())
+                .setName(product.name())
+                .setQuantity(product.quantity())
+                .setPrice(product.price().doubleValue())
                 .setSale(sale)
                 .setAvailable(available)
                 .build();

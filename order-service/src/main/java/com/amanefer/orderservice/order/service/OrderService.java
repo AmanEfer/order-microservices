@@ -4,9 +4,9 @@ import com.amanefer.orderservice.exception.BadRequestException;
 import com.amanefer.orderservice.exception.OrderNotFoundException;
 import com.amanefer.orderservice.inventory.client.InventoryClient;
 import com.amanefer.orderservice.inventory.grpc.ProductResponse;
+import com.amanefer.orderservice.mapper.OrderMapper;
 import com.amanefer.orderservice.order.model.dto.CreateOrderRequest;
 import com.amanefer.orderservice.order.model.dto.OrderItemRequest;
-import com.amanefer.orderservice.order.model.dto.OrderItemResponse;
 import com.amanefer.orderservice.order.model.dto.OrderResponse;
 import com.amanefer.orderservice.order.model.entity.Order;
 import com.amanefer.orderservice.order.model.entity.OrderItem;
@@ -26,13 +26,12 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final InventoryClient inventoryClient;
+    private final OrderMapper orderMapper;
 
     public List<OrderResponse> getUserOrders(Long userId) {
         List<Order> orders = orderRepository.findAllByUserId(userId);
 
-        return orders.stream()
-                .map(this::toOrderResponse)
-                .toList();
+        return orderMapper.toOrderResponseList(orders);
     }
 
     public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
@@ -46,36 +45,14 @@ public class OrderService {
                 throw new BadRequestException("Продукт с ID %s недоступен".formatted(item.productId()));
             }
 
-            var price = BigDecimal.valueOf(product.getPrice());
-            int saleValue = product.getSale();
-
-            var sale = BigDecimal.ONE.subtract(
-                    BigDecimal.valueOf(saleValue)
-                            .divide(BigDecimal.valueOf(100))
-            );
-
-            var priceWithSale = price.multiply(sale);
-
-            var itemTotalPrice = priceWithSale
-                    .multiply(BigDecimal.valueOf(item.quantity()))
-                    .setScale(2, RoundingMode.HALF_UP);
-
-            OrderItem orderItem = OrderItem.builder()
-                    .productId(product.getProductId())
-                    .name(product.getName())
-                    .quantity(item.quantity())
-                    .price(price)
-                    .sale(saleValue)
-                    .priceWithSale(priceWithSale)
-                    .totalPrice(itemTotalPrice)
-                    .build();
+            var orderItem = buildOrderItem(product, item);
 
             items.add(orderItem);
 
-            orderTotalPrice = orderTotalPrice.add(itemTotalPrice);
+            orderTotalPrice = orderTotalPrice.add(orderItem.getTotalPrice());
         }
 
-        Order order = Order.builder()
+        var order = Order.builder()
                 .userId(userId)
                 .totalPrice(orderTotalPrice)
                 .items(items)
@@ -83,7 +60,7 @@ public class OrderService {
 
         order = orderRepository.save(order);
 
-        return toOrderResponse(order);
+        return orderMapper.toOrderResponse(order);
     }
 
     @Transactional
@@ -97,24 +74,32 @@ public class OrderService {
         return "Заказ с ID %s удален".formatted(orderId);
     }
 
-    private OrderResponse toOrderResponse(Order order) {
-        return OrderResponse.builder()
-                .orderId(order.getId())
-                .userId(order.getUserId())
-                .totalPrice(order.getTotalPrice())
-                .items(
-                        order.getItems().stream()
-                                .map(item -> OrderItemResponse.builder()
-                                        .productId(item.getProductId())
-                                        .name(item.getName())
-                                        .quantity(item.getQuantity())
-                                        .price(item.getPrice())
-                                        .sale(item.getSale())
-                                        .priceWithSale(item.getPriceWithSale())
-                                        .totalPrice(item.getTotalPrice())
-                                        .build())
-                                .toList()
-                )
+    private OrderItem buildOrderItem(
+            ProductResponse product,
+            OrderItemRequest item
+    ) {
+        var price = BigDecimal.valueOf(product.getPrice());
+        int saleValue = product.getSale();
+
+        var sale = BigDecimal.ONE.subtract(
+                BigDecimal.valueOf(saleValue)
+                        .divide(BigDecimal.valueOf(100))
+        );
+
+        var priceWithSale = price.multiply(sale);
+
+        var itemTotalPrice = priceWithSale
+                .multiply(BigDecimal.valueOf(item.quantity()))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        return OrderItem.builder()
+                .productId(product.getProductId())
+                .name(product.getName())
+                .quantity(item.quantity())
+                .price(price)
+                .sale(saleValue)
+                .priceWithSale(priceWithSale)
+                .totalPrice(itemTotalPrice)
                 .build();
     }
 }

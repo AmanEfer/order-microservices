@@ -4,6 +4,7 @@ import com.amanefer.orderservice.exception.BadRequestException;
 import com.amanefer.orderservice.exception.InvalidTokenException;
 import com.amanefer.orderservice.exception.UnauthorizedException;
 import com.amanefer.orderservice.exception.UserNotFoundException;
+import com.amanefer.orderservice.mapper.UserMapper;
 import com.amanefer.orderservice.user.model.dto.AuthResponse;
 import com.amanefer.orderservice.user.model.dto.LoginRequest;
 import com.amanefer.orderservice.user.model.dto.RegisterRequest;
@@ -11,7 +12,6 @@ import com.amanefer.orderservice.user.model.entity.User;
 import com.amanefer.orderservice.user.repository.UserRepository;
 import com.amanefer.orderservice.user.service.RoleService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +22,11 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class AuthService {
 
-    @Value("${user.role.default-name}")
-    private String defaultRoleName;
-
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -40,13 +38,10 @@ public class AuthService {
             throw new BadRequestException("Такой email уже занят");
         }
 
-        var role = roleService.getRoleByName(defaultRoleName);
-        var user = User.builder()
-                .username(request.username())
-                .password(passwordEncoder.encode(request.password()))
-                .email(request.email())
-                .roles(Set.of(role))
-                .build();
+        var user = userMapper.toEntity(request);
+
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setRoles(Set.of(roleService.getDefaultRole()));
 
         userRepository.save(user);
 

@@ -1,6 +1,8 @@
 package com.amanefer.inventoryservice.service;
 
+import com.amanefer.inventoryservice.mapper.ProductMapper;
 import com.amanefer.inventoryservice.model.dto.CreateProductRequest;
+import com.amanefer.inventoryservice.model.dto.ProductResponseDto;
 import com.amanefer.inventoryservice.model.dto.UpdateProductRequest;
 import com.amanefer.inventoryservice.model.entity.Product;
 import com.amanefer.inventoryservice.repository.ProductRepository;
@@ -15,35 +17,38 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
 
-    public Product getProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Продукт с ID " + id + " не найден"));
+    public ProductResponseDto getProductById(Long id) {
+        var product = getProduct(id);
+
+        return productMapper.toProductResponseDto(product);
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
+    public List<ProductResponseDto> getAllProducts() {
+        var products = productRepository.findAll();
 
-    @Transactional
-    public Product addProduct(CreateProductRequest request) {
-        var product = Product.builder()
-                .name(request.name())
-                .quantity(request.quantity())
-                .price(request.price())
-                .build();
-
-        return productRepository.save(product);
+        return productMapper.toProductResponseDtoList(products);
     }
 
     @Transactional
-    public Product updateProduct(Long id, UpdateProductRequest request) {
-        var product = getProductById(id);
+    public ProductResponseDto addProduct(CreateProductRequest request) {
+        var product = productMapper.toEntity(request);
+
+        var savedProduct = productRepository.save(product);
+
+        return productMapper.toProductResponseDto(savedProduct);
+    }
+
+    @Transactional
+    public ProductResponseDto updateProduct(Long id, UpdateProductRequest request) {
+        var product = getProduct(id);
 
         product.setPrice(request.price());
 
-        return productRepository.save(product);
+        var updatedProduct = productRepository.save(product);
+
+        return productMapper.toProductResponseDto(updatedProduct);
     }
 
     @Transactional
@@ -54,5 +59,11 @@ public class ProductService {
         productRepository.deleteById(id);
 
         return "Продукт с ID " + id + " успешно удален";
+    }
+
+    private Product getProduct(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Продукт с ID " + id + " не найден"));
     }
 }

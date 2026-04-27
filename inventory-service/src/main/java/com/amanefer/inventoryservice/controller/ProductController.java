@@ -1,8 +1,8 @@
 package com.amanefer.inventoryservice.controller;
 
 import com.amanefer.inventoryservice.model.dto.CreateProductRequest;
+import com.amanefer.inventoryservice.model.dto.ProductResponseDto;
 import com.amanefer.inventoryservice.model.dto.UpdateProductRequest;
-import com.amanefer.inventoryservice.model.entity.Product;
 import com.amanefer.inventoryservice.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,31 +25,31 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
+    public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
         var response = productService.getAllProducts();
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable("id") Long id) {
+    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable("id") Long id) {
         var response = productService.getProductById(id);
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody CreateProductRequest request) {
+    public ResponseEntity<ProductResponseDto> createProduct(@RequestBody CreateProductRequest request) {
         var response = productService.addProduct(request);
 
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(
+    public ResponseEntity<ProductResponseDto> updateProduct(
             @PathVariable("id") Long id,
             @RequestBody UpdateProductRequest request
-            ) {
+    ) {
         var response = productService.updateProduct(id, request);
 
         return ResponseEntity.ok(response);

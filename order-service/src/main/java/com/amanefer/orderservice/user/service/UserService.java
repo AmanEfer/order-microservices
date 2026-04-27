@@ -2,33 +2,29 @@ package com.amanefer.orderservice.user.service;
 
 import com.amanefer.orderservice.exception.BadRequestException;
 import com.amanefer.orderservice.exception.UserNotFoundException;
+import com.amanefer.orderservice.mapper.UserMapper;
 import com.amanefer.orderservice.user.model.dto.UserRequest;
-import com.amanefer.orderservice.user.model.entity.Role;
+import com.amanefer.orderservice.user.model.dto.UserResponse;
 import com.amanefer.orderservice.user.model.entity.User;
 import com.amanefer.orderservice.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    @Value("${user.role.default-name}")
-    private String defaultRoleName;
-
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @Transactional
-    public User createNewUser(UserRequest request) {
+    public UserResponse createNewUser(UserRequest request) {
         if (userRepository.existsByUsername(request.username())) {
             throw new BadRequestException("Пользователь с таким именем уже существует");
         }
@@ -37,42 +33,40 @@ public class UserService {
             throw new BadRequestException("Такой email уже занят");
         }
 
-        Set<Role> roles;
-        if (request.roles() == null || request.roles().isEmpty()) {
-            var role = roleService.getRoleByName(defaultRoleName);
-            roles = Set.of(role);
-        } else {
-            roles = request.roles().stream()
-                    .map(roleService::getRoleByName)
-                    .collect(Collectors.toSet());
-        }
+        var user = userMapper.toEntity(request);
 
-        var user = User.builder()
-                .username(request.username())
-                .password(passwordEncoder.encode(request.password()))
-                .email(request.email())
-                .roles(roles)
-                .build();
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(roleService.prepareRoles(request.roles()));
 
-        return userRepository.save(user);
+        var savedUser = userRepository.save(user);
+
+        return userMapper.toResponse(savedUser);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserResponse> getAllUsers() {
+        var users = userRepository.findAll();
+
+        return userMapper.toResponseList(users);
     }
 
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() ->
-                        new UserNotFoundException("Пользователь с ID " + id + " не найден"));
+    public UserResponse getUserById(Long id) {
+        var user = getUser(id);
+
+        return userMapper.toResponse(user);
     }
 
     @Transactional
     public String deleteUserById(Long id) {
-        var userForDelete = getUserById(id);
+        var userForDelete = getUser(id);
 
         userRepository.delete(userForDelete);
 
         return "Пользователь с ID " + id + " успешно удален";
+    }
+
+    private User getUser(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() ->
+                        new UserNotFoundException("Пользователь с ID " + id + " не найден"));
     }
 }

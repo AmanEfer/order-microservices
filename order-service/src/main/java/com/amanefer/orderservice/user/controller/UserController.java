@@ -1,7 +1,7 @@
 package com.amanefer.orderservice.user.controller;
 
 import com.amanefer.orderservice.user.model.dto.UserRequest;
-import com.amanefer.orderservice.user.model.entity.User;
+import com.amanefer.orderservice.user.model.dto.UserResponse;
 import com.amanefer.orderservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,21 +24,21 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<User> createNewUser(@Valid @RequestBody UserRequest userRequest) {
+    public ResponseEntity<UserResponse> createNewUser(@Valid @RequestBody UserRequest userRequest) {
         var response = userService.createNewUser(userRequest);
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         var response = userService.getAllUsers();
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable("id") Long id) {
         var response = userService.getUserById(id);
 
         return ResponseEntity.ok(response);
