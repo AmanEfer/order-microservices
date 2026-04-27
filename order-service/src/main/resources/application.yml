@@ -41,5 +41,5 @@ cors:
 
 grpc:
   inventory:
-    host: localhost
-    port: 9090
+    host: ${GRPC_INVENTORY_HOST:localhost}
+    port: ${GRPC_INVENTORY_PORT:9090}

@@ -3,8 +3,6 @@ mvnw
 mvnw.cmd
 
 target/
-!**/src/main/**/target/
-!**/src/test/**/target/
 
 .gitattributes
 
