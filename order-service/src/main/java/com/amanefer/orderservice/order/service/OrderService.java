@@ -3,10 +3,10 @@ package com.amanefer.orderservice.order.service;
 import com.amanefer.orderservice.exception.BadRequestException;
 import com.amanefer.orderservice.exception.OrderNotFoundException;
 import com.amanefer.orderservice.inventory.client.InventoryClient;
-import com.amanefer.orderservice.inventory.grpc.ProductResponse;
+import com.amanefer.orderservice.inventory.grpc.ReserveProductResponse;
+import com.amanefer.orderservice.inventory.grpc.ReservedProduct;
 import com.amanefer.orderservice.mapper.OrderMapper;
 import com.amanefer.orderservice.order.model.dto.CreateOrderRequest;
-import com.amanefer.orderservice.order.model.dto.OrderItemRequest;
 import com.amanefer.orderservice.order.model.dto.OrderResponse;
 import com.amanefer.orderservice.order.model.entity.Order;
 import com.amanefer.orderservice.order.model.entity.OrderItem;
@@ -34,18 +34,18 @@ public class OrderService {
         return orderMapper.toOrderResponseList(orders);
     }
 
+    @Transactional
     public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
         var items = new ArrayList<OrderItem>();
         var orderTotalPrice = BigDecimal.ZERO;
 
-        for (OrderItemRequest item : request.items()) {
-            ProductResponse product = inventoryClient.chackAvailability(item.productId(), item.quantity());
+        ReserveProductResponse reserveProductsResponse = inventoryClient.reserveProducts(request.items());
 
-            if (!product.getAvailable()) {
-                throw new BadRequestException("Продукт с ID %s недоступен".formatted(item.productId()));
-            }
+        if (!reserveProductsResponse.getSuccess())
+            throw new BadRequestException(reserveProductsResponse.getErrorMessage());
 
-            var orderItem = buildOrderItem(product, item);
+        for (ReservedProduct reservedProduct : reserveProductsResponse.getProductsList()) {
+            var orderItem = buildOrderItem(reservedProduct);
 
             items.add(orderItem);
 
@@ -58,9 +58,9 @@ public class OrderService {
                 .items(items)
                 .build();
 
-        order = orderRepository.save(order);
+        var savedOrder = orderRepository.save(order);
 
-        return orderMapper.toOrderResponse(order);
+        return orderMapper.toOrderResponse(savedOrder);
     }
 
     @Transactional
@@ -74,10 +74,7 @@ public class OrderService {
         return "Заказ с ID %s удален".formatted(orderId);
     }
 
-    private OrderItem buildOrderItem(
-            ProductResponse product,
-            OrderItemRequest item
-    ) {
+    private OrderItem buildOrderItem(ReservedProduct product) {
         var price = BigDecimal.valueOf(product.getPrice());
         int saleValue = product.getSale();
 
@@ -89,13 +86,13 @@ public class OrderService {
         var priceWithSale = price.multiply(sale);
 
         var itemTotalPrice = priceWithSale
-                .multiply(BigDecimal.valueOf(item.quantity()))
+                .multiply(BigDecimal.valueOf(product.getQuantity()))
                 .setScale(2, RoundingMode.HALF_UP);
 
         return OrderItem.builder()
                 .productId(product.getProductId())
                 .name(product.getName())
-                .quantity(item.quantity())
+                .quantity(product.getQuantity())
                 .price(price)
                 .sale(saleValue)
                 .priceWithSale(priceWithSale)

@@ -6,7 +6,7 @@ option java_package = "com.amanefer.orderservice.inventory.grpc";
 option java_multiple_files = true;
 
 service InventoryService {
-  rpc checkAvailability(ProductRequest) returns (ProductResponse);
+  rpc reserveProducts(ReserveProductRequest) returns (ReserveProductResponse);
 }
 
 message ProductRequest {
@@ -14,11 +14,20 @@ message ProductRequest {
   int32 quantity = 2;
 }
 
-message ProductResponse {
+message ReservedProduct {
   int64 productId = 1;
   string name = 2;
   int32 quantity = 3;
   double price = 4;
   int32 sale = 5;
-  bool available = 6;
+}
+
+message ReserveProductRequest {
+  repeated ProductRequest items = 1;
+}
+
+message ReserveProductResponse {
+  bool success = 1;
+  repeated ReservedProduct products = 2;
+  string errorMessage = 3;
 }
