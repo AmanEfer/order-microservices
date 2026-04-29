@@ -1,6 +1,7 @@
 package com.amanefer.orderservice.service;
 
 import com.amanefer.orderservice.exception.BadRequestException;
+import com.amanefer.orderservice.feign.NotificationFeignClient;
 import com.amanefer.orderservice.inventory.client.InventoryClient;
 import com.amanefer.orderservice.inventory.grpc.ReserveProductResponse;
 import com.amanefer.orderservice.inventory.grpc.ReservedProduct;
@@ -8,12 +9,14 @@ import com.amanefer.orderservice.kafka.message.OrderItemMessage;
 import com.amanefer.orderservice.kafka.message.OrderMessage;
 import com.amanefer.orderservice.kafka.producer.OrderProducer;
 import com.amanefer.orderservice.model.dto.order.CreateOrderRequest;
+import com.amanefer.orderservice.model.dto.order.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ public class UserOrdersService {
 
     private final InventoryClient inventoryClient;
     private final OrderProducer orderProducer;
+    private final NotificationFeignClient notificationFeignClient;
 
     public OrderMessage createOrder(Long userId, CreateOrderRequest request) {
         var items = new ArrayList<OrderItemMessage>();
@@ -48,6 +52,14 @@ public class UserOrdersService {
         orderProducer.sendMessage(event);
 
         return event;
+    }
+
+    public List<OrderResponse> getUserOrders(Long userId) {
+        return notificationFeignClient.getUserOrders(userId);
+    }
+
+    public String deleteUserOrderById(Long userId, Long orderId) {
+        return notificationFeignClient.deleteUserOrderById(userId, orderId);
     }
 
     private OrderItemMessage buildOrderItem(ReservedProduct product) {

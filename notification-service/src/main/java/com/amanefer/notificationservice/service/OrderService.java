@@ -6,6 +6,7 @@ import com.amanefer.notificationservice.mapper.OrderMapper;
 import com.amanefer.notificationservice.model.dto.OrderItemPageResponse;
 import com.amanefer.notificationservice.model.dto.OrderItemResponse;
 import com.amanefer.notificationservice.model.dto.OrderPageResponse;
+import com.amanefer.notificationservice.model.dto.OrderResponse;
 import com.amanefer.notificationservice.model.entity.Order;
 import com.amanefer.notificationservice.repository.OrderItemRepository;
 import com.amanefer.notificationservice.repository.OrderRepository;
@@ -53,5 +54,22 @@ public class OrderService {
         var items = orderItemRepository.findAllByUserId(userId, pageable);
 
         return orderItemMapper.toOrderItemPageResponse(items);
+    }
+
+    public List<OrderResponse> getUserOrders(Long userId) {
+        var orders = orderRepository.findAllByUserId(userId);
+
+        return orderMapper.toOrderResponseList(orders);
+    }
+
+    @Transactional
+    public String deleteOrder(Long userId, Long orderId) {
+        if (orderRepository.existsByUserIdAndId(userId, orderId)) {
+            orderRepository.deleteById(orderId);
+            return "Заказ успешно удален";
+        }
+
+        return "Заказ с ID %d не найден".formatted(orderId);
+
     }
 }

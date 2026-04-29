@@ -3,10 +3,12 @@ package com.amanefer.notificationservice.controller;
 import com.amanefer.notificationservice.model.dto.OrderItemPageResponse;
 import com.amanefer.notificationservice.model.dto.OrderItemResponse;
 import com.amanefer.notificationservice.model.dto.OrderPageResponse;
+import com.amanefer.notificationservice.model.dto.OrderResponse;
 import com.amanefer.notificationservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,5 +52,18 @@ public class OrderController {
         var response = orderService.getAllOrderItemsByUserId(userId, PageRequest.of(page, size));
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/my")
+    public List<OrderResponse> getUserOrders(@RequestParam("userId") Long userId) {
+        return orderService.getUserOrders(userId);
+    }
+
+    @DeleteMapping("/my")
+    public String deleteOrderById(
+            @RequestParam("userId") Long userId,
+            @RequestParam("orderId") Long orderId
+    ) {
+        return orderService.deleteOrder(userId, orderId);
     }
 }
