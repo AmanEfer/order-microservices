@@ -4,7 +4,7 @@ import com.amanefer.orderservice.inventory.grpc.InventoryServiceGrpc;
 import com.amanefer.orderservice.inventory.grpc.ProductRequest;
 import com.amanefer.orderservice.inventory.grpc.ReserveProductRequest;
 import com.amanefer.orderservice.inventory.grpc.ReserveProductResponse;
-import com.amanefer.orderservice.order.model.dto.OrderItemRequest;
+import com.amanefer.orderservice.model.dto.order.OrderItemRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

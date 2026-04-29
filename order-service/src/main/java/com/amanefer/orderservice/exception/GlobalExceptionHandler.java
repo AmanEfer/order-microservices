@@ -32,7 +32,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             UserNotFoundException.class,
             RoleNotFoundException.class,
-            OrderNotFoundException.class,
             UnauthorizedException.class,
             BadRequestException.class,
             InvalidTokenException.class

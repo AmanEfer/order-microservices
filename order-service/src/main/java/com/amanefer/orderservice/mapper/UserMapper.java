@@ -1,11 +1,11 @@
 package com.amanefer.orderservice.mapper;
 
-import com.amanefer.orderservice.user.model.dto.RegisterRequest;
-import com.amanefer.orderservice.user.model.dto.RoleResponse;
-import com.amanefer.orderservice.user.model.dto.UserRequest;
-import com.amanefer.orderservice.user.model.dto.UserResponse;
-import com.amanefer.orderservice.user.model.entity.Role;
-import com.amanefer.orderservice.user.model.entity.User;
+import com.amanefer.orderservice.model.dto.auth.RegisterRequest;
+import com.amanefer.orderservice.model.dto.user.RoleResponse;
+import com.amanefer.orderservice.model.dto.user.UserRequest;
+import com.amanefer.orderservice.model.dto.user.UserResponse;
+import com.amanefer.orderservice.model.entity.Role;
+import com.amanefer.orderservice.model.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
