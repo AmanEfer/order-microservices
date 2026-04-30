@@ -1,20 +1,18 @@
 package com.amanefer.orderservice.security;
 
-import com.amanefer.orderservice.exception.BadRequestException;
 import com.amanefer.orderservice.exception.InvalidTokenException;
 import com.amanefer.orderservice.exception.UnauthorizedException;
 import com.amanefer.orderservice.exception.UserNotFoundException;
-import com.amanefer.orderservice.mapper.UserMapper;
 import com.amanefer.orderservice.model.dto.auth.AuthResponse;
 import com.amanefer.orderservice.model.dto.auth.LoginRequest;
 import com.amanefer.orderservice.model.dto.auth.RegisterRequest;
 import com.amanefer.orderservice.model.entity.User;
 import com.amanefer.orderservice.repository.UserRepository;
 import com.amanefer.orderservice.service.RoleService;
+import com.amanefer.orderservice.service.UserRegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
@@ -22,28 +20,21 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final UserRegistrationService userRegistrationService;
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
-    private final UserMapper userMapper;
 
-    @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
-            throw new BadRequestException("Пользователь с таким именем уже существует");
-        }
+        var user = userRegistrationService.prepareUserForSave(
+                request.username(),
+                request.password(),
+                request.email(),
+                Set.of(roleService.getDefaultRole())
+        );
 
-        if (userRepository.existsByEmail(request.email())) {
-            throw new BadRequestException("Такой email уже занят");
-        }
-
-        var user = userMapper.toEntity(request);
-
-        user.setPassword(passwordEncoder.encode(request.password()));
-        user.setRoles(Set.of(roleService.getDefaultRole()));
-
-        userRepository.save(user);
+        userRegistrationService.saveNewUser(user);
 
         return generateTokensAndCreateAuthResponse(user);
     }

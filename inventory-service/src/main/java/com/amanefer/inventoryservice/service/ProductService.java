@@ -1,7 +1,7 @@
 package com.amanefer.inventoryservice.service;
 
-import com.amanefer.inventoryservice.exceptions.ProductNotEnoughException;
-import com.amanefer.inventoryservice.exceptions.ProductNotFoundException;
+import com.amanefer.inventoryservice.exceptions.ErrorType;
+import com.amanefer.inventoryservice.exceptions.InventoryServiceException;
 import com.amanefer.inventoryservice.inventory.grpc.ProductRequest;
 import com.amanefer.inventoryservice.mapper.ProductMapper;
 import com.amanefer.inventoryservice.model.dto.CreateProductRequest;
@@ -44,12 +44,11 @@ public class ProductService {
             Product product = productsMap.get(productId);
 
             if (product == null) {
-                throw new ProductNotFoundException("Товара с ID " + productId + " нет на складе");
+                throw new InventoryServiceException(ErrorType.PRODUCT_NOT_FOUND, productId);
             }
 
             if (product.getQuantity().compareTo(request.getQuantity()) < 0) {
-                throw new ProductNotEnoughException("На складе недостаточно товара с ID %d(%s). Попробуйте заказать меньше"
-                        .formatted(productId, product.getName()));
+                throw new InventoryServiceException(ErrorType.PRODUCT_NOT_ENOUGH, productId, product.getName());
             }
 
             product.setQuantity(product.getQuantity() - request.getQuantity());

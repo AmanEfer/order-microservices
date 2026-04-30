@@ -1,6 +1,5 @@
 package com.amanefer.orderservice.service;
 
-import com.amanefer.orderservice.exception.BadRequestException;
 import com.amanefer.orderservice.exception.UserNotFoundException;
 import com.amanefer.orderservice.mapper.UserMapper;
 import com.amanefer.orderservice.model.dto.user.UserRequest;
@@ -8,7 +7,6 @@ import com.amanefer.orderservice.model.dto.user.UserResponse;
 import com.amanefer.orderservice.model.entity.User;
 import com.amanefer.orderservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,27 +16,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final UserRegistrationService userRegistrationService;
     private final UserRepository userRepository;
     private final RoleService roleService;
-    private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
-    @Transactional
     public UserResponse createNewUser(UserRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
-            throw new BadRequestException("Пользователь с таким именем уже существует");
-        }
+        var user = userRegistrationService.prepareUserForSave(
+                request.username(),
+                request.password(),
+                request.email(),
+                roleService.prepareRoles(request.roles())
+        );
 
-        if (userRepository.existsByEmail(request.email())) {
-            throw new BadRequestException("Такой email уже занят");
-        }
-
-        var user = userMapper.toEntity(request);
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(roleService.prepareRoles(request.roles()));
-
-        var savedUser = userRepository.save(user);
+        var savedUser = userRegistrationService.saveNewUser(user);
 
         return userMapper.toResponse(savedUser);
     }
