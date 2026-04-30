@@ -1,0 +1,64 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: order-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/order_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 10
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+
+user:
+  role:
+    default-name: "USER"
+
+jwt:
+  access:
+    secret: "fL6pW9zYvN4uX2bQ8mK0jH5gD1sA7rE3tZ6xV9cM2nB4="
+    expiration: 240000
+  refresh:
+    secret: "G8hJ2kL5mN7pQ9rS1tU3vW5xY7zA2bC4dE6fG8hJ0kL="
+    expiration: 3600000
+
+cors:
+  allowed-origins:
+    - http://localhost:3000
+
+grpc:
+  inventory:
+    host: ${GRPC_INVENTORY_HOST:localhost}
+    port: ${GRPC_INVENTORY_PORT:9090}
+
+app:
+  kafka:
+    topics:
+      orders: orders
+
+  feign:
+    notification-url: http://localhost:8082
